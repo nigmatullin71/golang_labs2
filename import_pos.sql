@@ -15,8 +15,10 @@ INSERT INTO position (earthpos, sunPosition, moonPosition) VALUES
 ('EarthPos5', 'SunPos5', 'MoonPos5');
 
 DELIMITER //
-CREATE PROCEDURE NameProc()
+CREATE PROCEDURE JoinTables(IN table1 VARCHAR(50), IN table2 VARCHAR(50))
 BEGIN
-    SELECT * FROM position;
-END //
+    SET @query = CONCAT('SELECT * FROM ', table1, ' JOIN ', table2, ' ON ', table1, '.id = ', table2, '.', table1, '_id');
+    PREPARE stmt FROM @query;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
 DELIMITER ;
