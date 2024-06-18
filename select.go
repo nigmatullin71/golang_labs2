@@ -25,41 +25,39 @@ func main() {
 	defer db.Close()
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-
 		viewSelect(w, db)
 	})
 
 	// сохранение отправленных значений через поля формы.
 	http.HandleFunc("/postform", func(w http.ResponseWriter, r *http.Request) {
-
 		earthpos := r.FormValue("earthpos")
 		sunPosition := r.FormValue("sunPosition")
 		moonPosition := r.FormValue("moonPosition")
 
-		sQuery := ""
-		var rows *sql.Rows
-		var err error
-
-		if earthpos == "" {
-			sQuery = "INSERT INTO position (earthpos, sunPosition, moonPosition) VALUES (?, ?, ?)"
-			rows, err = db.Query(sQuery, earthpos, sunPosition, moonPosition)
-		} else {
-			sQuery = "INSERT INTO position (earthpos, sunPosition, moonPosition) VALUES (?, ?, ?)"
-			rows, err = db.Query(sQuery, earthpos, sunPosition, moonPosition)
-		}
-
-		fmt.Println(sQuery)
-
+		sQuery := "INSERT INTO position (earthpos, sunPosition, moonPosition) VALUES (?, ?, ?)"
+		_, err := db.Exec(sQuery, earthpos, sunPosition, moonPosition)
 		if err != nil {
-			panic(err)
+			http.Error(w, "Ошибка при вставке данных: "+err.Error(), http.StatusInternalServerError)
+			return
 		}
-		defer rows.Close()
+
+		// Вызов хранимой процедуры
+		err = callProcedure(db)
+		if err != nil {
+			http.Error(w, "Ошибка при вызове хранимой процедуры: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 		viewSelect(w, db)
 	})
 
 	fmt.Println("Server is listening on http://localhost:8181/")
 	http.ListenAndServe(":8181", nil)
+}
+
+func callProcedure(db *sql.DB) error {
+	_, err := db.Exec("CALL NameProc()")
+	return err
 }
 
 func viewHeadQuery(w http.ResponseWriter, db *sql.DB, sShow string) {
