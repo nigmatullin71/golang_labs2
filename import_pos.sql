@@ -13,3 +13,10 @@ INSERT INTO position (earthpos, sunPosition, moonPosition) VALUES
 ('EarthPos3', 'SunPos3', 'MoonPos3'),
 ('EarthPos4', 'SunPos4', 'MoonPos4'),
 ('EarthPos5', 'SunPos5', 'MoonPos5');
+
+DELIMITER //
+CREATE PROCEDURE NameProc()
+BEGIN
+    SELECT * FROM position;
+END //
+DELIMITER ;
